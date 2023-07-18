@@ -1,7 +1,11 @@
 let express=require("express");
 const { MongoClient } = require("mongodb");
+const bodyParser = require('body-parser');
+
 let app=express();
-app.get("/get_data",async (req,res)=>{
+app.use(bodyParser.json());
+app.post("/get_data",async (req,res)=>{
+    const data = req.body;
     console.log("you have entered into the api")
     async function connectToMongoDB() {
         try {
@@ -35,15 +39,17 @@ app.get("/get_data",async (req,res)=>{
     const db = mongo?.db;
     let items_array = [];
     let items_Quantity = [];
-    let itemsBatchDetails = []
+    let itemsBatchDetails = [];
+    let orderId = data.orderId;
+    let supplierId = data.supplierId;
     //SSconsole.log("DB details",db);
 
         if(db) {
           const collection_PO = db.collection("PO_Final");
           const collection_Inventory = db.collection("Customer_Inventory_Bulkupload");
-          const result_PO = await collection_PO.find({ "Order_Id" : req.query.orderId}).toArray();
+          const result_PO = await collection_PO.find({ "Order_Id" : orderId}).toArray();
           // const result_PO = await collection_PO.find({ "Order_Id" : "Order001"}).toArray();
-          const result_Inventory= await collection_Inventory.find({"Supplier_Id" : parseInt(req.query.supplierId)}).toArray();
+          const result_Inventory= await collection_Inventory.find({"Supplier_Id" : parseInt(supplierId)}).toArray();
           // const result_Inventory= await collection_Inventory.find({"Supplier_Id" : 102}).toArray();
           const inventoryItems = result_Inventory[0].Items; 
           
@@ -65,7 +71,7 @@ app.get("/get_data",async (req,res)=>{
                 });
                 inventoryItems[j].Total_AvaliableQuantity -= items_Quantity[i];
                 await collection_Inventory.updateOne(
-                  { "Supplier_Id": parseInt(req.query.supplierId), "Items.Item_Id": items_array[i] },
+                  { "Supplier_Id": parseInt(supplierId), "Items.Item_Id": items_array[i] },
                   { $set: { "Items.$.Total_AvaliableQuantity": inventoryItems[j].Total_AvaliableQuantity } }
                 );
               }
@@ -77,7 +83,7 @@ app.get("/get_data",async (req,res)=>{
                 if(sortedBatches[ele].Avaliable_Quantity==required_Quantity){
                   let batchId = sortedBatches[ele].Batch_No;
                   await collection_Inventory.updateOne(
-                    { "Supplier_Id": parseInt(req.query.supplierId), "Items.Item_Id": items_array[i] },
+                    { "Supplier_Id": parseInt(supplierId), "Items.Item_Id": items_array[i] },
                     { $pull: { "Items.$.Batches": { Batch_No: batchId } } } 
                   );
 
@@ -94,7 +100,7 @@ app.get("/get_data",async (req,res)=>{
                 required_Quantity -= sortedBatches[ele].Avaliable_Quantity;
                 let batchId = sortedBatches[ele].Batch_No
                 await collection_Inventory.updateOne(
-                  { "Supplier_Id": parseInt(req.query.supplierId), "Items.Item_Id": items_array[i] },
+                  { "Supplier_Id": parseInt(supplierId), "Items.Item_Id": items_array[i] },
                   { $pull: { "Items.$.Batches": { Batch_No: batchId } } } 
                 );
                 sortedBatches.shift();
@@ -102,7 +108,7 @@ app.get("/get_data",async (req,res)=>{
             }
             itemsBatchDetails.push(itemsBatchDetailsSub);
             await collection_Inventory.updateOne(
-              { "Supplier_Id": parseInt(req.query.supplierId), "Items.Item_Id": items_array[i] },
+              { "Supplier_Id": parseInt(supplierId), "Items.Item_Id": items_array[i] },
               { $set: { "Items.$.Batches": sortedBatches } }
             );
             console.log("Updated Available_Quantity for Item ", items_array[i]);
