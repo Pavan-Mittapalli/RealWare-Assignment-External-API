@@ -74,14 +74,23 @@ app.get("/get_data",async (req,res)=>{
             while(required_Quantity>0){
               let ele = 0;
               if(sortedBatches[ele].Avaliable_Quantity>=required_Quantity){
+                if(sortedBatches[ele].Avaliable_Quantity==required_Quantity){
+                  let batchId = sortedBatches[ele].Batch_No;
+                  await collection_Inventory.updateOne(
+                    { "Supplier_Id": parseInt(req.query.supplierId), "Items.Item_Id": items_array[i] },
+                    { $pull: { "Items.$.Batches": { Batch_No: batchId } } } 
+                  );
+                  
+                }
+                sortedBatches[ele].Avaliable_Quantity = sortedBatches[ele].Avaliable_Quantity - required_Quantity;
                 itemsBatchDetailsSub.push(sortedBatches[ele])
-                itemsBatchDetailsSub[itemsBatchDetailsSub.length-1].Avaliable_Quantity = required_Quantity;
+                itemsBatchDetailsSub[itemsBatchDetailsSub.length-1].Taken_Quantity = required_Quantity;
                 required_Quantity = 0;
               }
               else{
                 let dummyQuantity = required_Quantity - sortedBatches[ele].Avaliable_Quantity;
                 itemsBatchDetailsSub.push(sortedBatches[ele])
-                itemsBatchDetailsSub[itemsBatchDetailsSub.length-1].Avaliable_Quantity = dummyQuantity;
+                itemsBatchDetailsSub[itemsBatchDetailsSub.length-1].Taken_Quantity = dummyQuantity;
                 required_Quantity -= sortedBatches[ele].Avaliable_Quantity;
                 let batchId = sortedBatches[ele].Batch_No
                 await collection_Inventory.updateOne(
@@ -111,6 +120,6 @@ app.get("/get_data",async (req,res)=>{
         }
         res.send({itemsBatchDetails});
 });
-app.listen(6105,()=>{
-    console.log("app is running on port 6105");
+app.listen(3000,()=>{
+    console.log("app is running on port 3000");
 })
