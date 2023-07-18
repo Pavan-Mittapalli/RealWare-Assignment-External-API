@@ -80,7 +80,7 @@ app.get("/get_data",async (req,res)=>{
                     { "Supplier_Id": parseInt(req.query.supplierId), "Items.Item_Id": items_array[i] },
                     { $pull: { "Items.$.Batches": { Batch_No: batchId } } } 
                   );
-                  
+
                 }
                 sortedBatches[ele].Avaliable_Quantity = sortedBatches[ele].Avaliable_Quantity - required_Quantity;
                 itemsBatchDetailsSub.push(sortedBatches[ele])
@@ -120,6 +120,6 @@ app.get("/get_data",async (req,res)=>{
         }
         res.send({itemsBatchDetails});
 });
-app.listen(3000,()=>{
-    console.log("app is running on port 3000");
+app.listen(6105,()=>{
+    console.log("app is running on port 6105");
 })
