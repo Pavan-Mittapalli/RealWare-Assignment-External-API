@@ -70,11 +70,13 @@ app.post("/get_data",async (req,res)=>{
                     const expiryDateB = new Date(b.Expiry_Date);
                     return (expiryDateA - expiryDateB) ;
                 });
-                inventoryItems[j].Total_AvaliableQuantity -= items_Quantity[i];
-                await collection_Inventory.updateOne(
-                  { "Supplier_Id": (supplierId), "Items.Item_Id": items_array[i] },
-                  { $set: { "Items.$.Total_AvaliableQuantity": inventoryItems[j].Total_AvaliableQuantity } }
-                );
+                if(Item_Quantity[i]<=inventoryItems[j].Total_AvaliableQuantity){
+                  inventoryItems[j].Total_AvaliableQuantity -= items_Quantity[i];
+                  await collection_Inventory.updateOne(
+                    { "Supplier_Id": (supplierId), "Items.Item_Id": items_array[i] },
+                    { $set: { "Items.$.Total_AvaliableQuantity": inventoryItems[j].Total_AvaliableQuantity } }
+                  );
+                }
               }
             }
             let required_Quantity = items_Quantity[i];
@@ -87,7 +89,6 @@ app.post("/get_data",async (req,res)=>{
                     { "Supplier_Id": (supplierId), "Items.Item_Id": items_array[i] },
                     { $pull: { "Items.$.Batches": { Batch_No: batchId } } } 
                   );
-
                 }
                 sortedBatches[ele].Avaliable_Quantity = sortedBatches[ele].Avaliable_Quantity - required_Quantity;
                 itemsBatchDetailsSub.push(sortedBatches[ele])
