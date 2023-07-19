@@ -95,9 +95,8 @@ app.post("/get_data",async (req,res)=>{
                 required_Quantity = 0;
               }
               else{
-                let dummyQuantity = required_Quantity - sortedBatches[ele].Avaliable_Quantity;
                 itemsBatchDetailsSub.push(sortedBatches[ele])
-                itemsBatchDetailsSub[itemsBatchDetailsSub.length-1].Taken_Quantity = dummyQuantity;
+                itemsBatchDetailsSub[itemsBatchDetailsSub.length-1].Taken_Quantity = sortedBatches[ele].Avaliable_Quantity;
                 required_Quantity -= sortedBatches[ele].Avaliable_Quantity;
                 let batchId = sortedBatches[ele].Batch_No
                 await collection_Inventory.updateOne(
