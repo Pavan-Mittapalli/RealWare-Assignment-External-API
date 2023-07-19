@@ -70,7 +70,7 @@ app.post("/get_data",async (req,res)=>{
                     const expiryDateB = new Date(b.Expiry_Date);
                     return (expiryDateA - expiryDateB) ;
                 });
-                if(Item_Quantity[i]<=inventoryItems[j].Total_AvaliableQuantity){
+                if(items_Quantity[i]<=inventoryItems[j].Total_AvaliableQuantity){
                   inventoryItems[j].Total_AvaliableQuantity -= items_Quantity[i];
                   await collection_Inventory.updateOne(
                     { "Supplier_Id": (supplierId), "Items.Item_Id": items_array[i] },
