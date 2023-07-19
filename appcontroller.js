@@ -6,6 +6,7 @@ let app=express();
 app.use(bodyParser.json());
 app.post("/get_data",async (req,res)=>{
     const data = req.body;
+    console.log("REQUEST_BODY",data);
     console.log("you have entered into the api")
     async function connectToMongoDB() {
         try {
